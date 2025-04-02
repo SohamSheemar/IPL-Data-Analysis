@@ -1,0 +1,89 @@
+1. CREATE TABLE cricket_stats (
+    Year INTEGER,
+    Player_Name TEXT,
+    Matches_Batted INTEGER,
+    Not_Outs INTEGER,
+    Runs_Scored INTEGER,
+    Highest_Score TEXT,
+    Batting_Average FLOAT,
+    Balls_Faced INTEGER,
+    Batting_Strike_Rate FLOAT,
+    Centuries INTEGER,
+    Half_Centuries INTEGER,
+    Fours INTEGER,
+    Sixes INTEGER,
+    Catches_Taken INTEGER,
+    Stumpings INTEGER,
+    Matches_Bowled INTEGER,
+    Balls_Bowled INTEGER,
+    Runs_Conceded INTEGER,
+    Wickets_Taken INTEGER,
+    Best_Bowling_Match TEXT,
+    Bowling_Average FLOAT,
+    Economy_Rate FLOAT,
+    Bowling_Strike_Rate FLOAT,
+    Four_Wicket_Hauls INTEGER,
+    Five_Wicket_Hauls INTEGER
+);
+select * from cricket_stats
+
+ # clean the data then import the cleaned file 
+
+2. COPY cricket_stats 
+FROM 'C:/Users/SOHAM/Desktop/PROJECTS/Cricket Stats/cleaned_cricket_data.csv' 
+DELIMITER ',' 
+CSV HEADER;
+
+3. /* Players with Highest Batting Average in Each Year
+(Min. 5 matches played) */
+SELECT Year, Player_Name, Batting_Average
+FROM cricket_stats c1
+WHERE Matches_Batted >= 5
+AND Batting_Average = (
+    SELECT MAX(Batting_Average) 
+    FROM cricket_stats c2
+    WHERE c1.Year = c2.Year AND c2.Matches_Batted >= 5
+);
+
+4. /* select player with highest batting average with minimum mathces played is 5*/
+SELECT Player_Name, Year, Batting_Average
+FROM cricket_stats
+WHERE Matches_Batted >= 10
+AND Batting_Average = (SELECT MAX(Batting_Average) FROM cricket_stats WHERE Matches_Batted >= 10);
+
+5. /*Best Bowling Average for Bowlers Who Bowled at Least 50 Overs (300 Balls) in a Year*/
+with EligibleBowlers as (
+select Year, Player_Name, Bowling_Average
+from cricket_stats
+where Balls_Bowled >= 300
+)
+select Year, Player_Name, Bowling_Average
+from EligibleBowlers
+where Bowling_Average = (
+select min(Bowling_Average) from EligibleBowlers where Year = EligibleBowlers.Year
+);
+
+6. /* All-Rounders Who Scored >400 Runs & Took ≥15 Wickets in a Single Year*/
+select Year, Player_Name, Runs_Scored, Wickets_Taken
+from cricket_stats
+where Runs_Scored >= 400 and Wickets_Taken >= 15
+
+7. /* Players who have scored a century and taken more than 10 wickets in a single year*/
+select Year, Player_Name, centuries, wickets_taken from cricket_stats
+where centuries >= 1 and wickets_taken >= 10
+
+8. /* Players who have scored a half century and taken more than 15 wickets in a single year*/
+select Year, Player_Name, half_centuries, wickets_taken from cricket_stats
+where half_centuries >= 1 and wickets_taken >= 15
+
+
+9. /*Wicket keepers with more than 5 stumpings and a half century in a single year*/
+select Year, Player_Name, stumpings, half_centuries from cricket_stats
+where stumpings >= 5 and half_centuries >= 1
+
+10. /* Players with batting strike rate more than 150 and economy rate between 5 and 6 minimum of 10 matches batted and over 100 balls bowled*/
+select  Player_Name, Batting_Strike_Rate, matches_batted, economy_rate, balls_bowled, Year from cricket_stats
+where (
+matches_batted >= 10 and balls_bowled >= 100
+and Batting_Strike_Rate >= 150 and economy_rate between 5 and 6
+);
